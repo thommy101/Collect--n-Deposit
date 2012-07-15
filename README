@@ -1,0 +1,3 @@
+Collect 'n Deposit allows you to automatically transport items between chests.
+It makes uses of storage minecarts to transport items. You can filter on
+item ID's which need to be collected and which need to be deposited.
