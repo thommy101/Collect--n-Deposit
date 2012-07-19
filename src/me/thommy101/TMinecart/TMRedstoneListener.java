@@ -87,44 +87,32 @@ private static TMinecart plugin;
 						new Location(world, intX, intY-1, intZ-1)};
 				for(Location location:locations)
 				{
-					if(location.getBlock().getTypeId()==54)
+					if(location.getBlock().getTypeId()!=54) return;
+					for(int blockid:blocks)
 					{
-						if(fill)
-						{
-	 						for(int blockid:blocks)
+						if(blockid==0) return;
+ 						if(fill)
+ 						{
+ 							int amount = checkChestInv(location, blockid);
+	 						//fill cart with amount in chest found
+	 						if(amount!=0)
 	 						{
-	 							if(blockid!=0)
-	 							{
-	 								int amount = checkChestInv(location, blockid);
-	 								//fill cart with amount in chest found
-	 								if(amount!=0)
-	 								{
-	 									int leftover = modCart(entity, blockid, true, amount);
-	 									amount -= leftover;
-	 									//empty chest with items that fit in the cart
-	 									modChest(location, blockid, false, amount);
-	 								}
-	 							}
+	 							int leftover = modCart(entity, blockid, true, amount);
+	 							amount -= leftover;
+	 							//empty chest with items that fit in the cart
+	 							modChest(location, blockid, false, amount);
 	 						}
-						}
-						else
-						{
-							for(int blockid:blocks)
- 							{
-								if(blockid!=0)
-								{
-									int amount = checkCartInv(entity, blockid);
-									//fill chest with amount in chest found
-									if(amount!=0)
-									{
-										int leftover = modChest(location, blockid, true, amount);
-										amount -= leftover;
-										//empty cart with items that fit in the chest
-										modCart(entity, blockid, false, amount);
-									}
-								}
+ 						}else{
+							int amount = checkCartInv(entity, blockid);
+							//fill chest with amount in chest found
+							if(amount!=0)
+							{
+								int leftover = modChest(location, blockid, true, amount);
+								amount -= leftover;
+								//empty cart with items that fit in the chest
+								modCart(entity, blockid, false, amount);
 							}
-						}
+ 						}
 					}
 				}
 			}
