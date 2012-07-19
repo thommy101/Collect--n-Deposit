@@ -77,9 +77,13 @@ private static TMinecart plugin;
 				int intY = dRail.getY();
 				int intZ = dRail.getZ();
 				Location locations[]={
+						new Location(world, intX+1, intY, intZ),
 						new Location(world, intX+1, intY-1, intZ),
+						new Location(world, intX-1, intY, intZ),
 						new Location(world, intX-1, intY-1, intZ),
+						new Location(world, intX, intY, intZ+1),
 						new Location(world, intX, intY-1, intZ+1),
+						new Location(world, intX, intY, intZ-1),
 						new Location(world, intX, intY-1, intZ-1)};
 				for(Location location:locations)
 				{
