@@ -2,3 +2,16 @@ name: Collect n Deposit
 main: me.thommy101.TMinecart.TMinecart
 version: 0.5
 author: thommy101
+permissions:
+    cnd.*:
+        description: Gives user access to all Collect 'n Deposit commands
+        children:
+            cnd.collect: true
+            cnd.deposit: true
+        defaults: false
+    cnd.collect:
+        description: Allows users to place an collector sign.
+        defaults: false
+    cnd.deposit:
+        description: Allows users to place an depositor sign.
+        defaults: false

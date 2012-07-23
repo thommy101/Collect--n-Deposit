@@ -12,6 +12,7 @@ public class TMinecart extends JavaPlugin
 	public Logger log = Logger.getLogger("Minecraft");
 	public PluginManager pm = Bukkit.getServer().getPluginManager();
 	public TMRedstoneListener redstoneListener = new TMRedstoneListener(this);
+	public TMSignChangeListener signPlaceListener = new TMSignChangeListener(this);
 	
 	public void onDisable()
 	{
@@ -23,5 +24,6 @@ public class TMinecart extends JavaPlugin
 		//Set logprefix
 		logprefix = "["+ getName() + "] ";
 		pm.registerEvents(redstoneListener, this);
+		pm.registerEvents(signPlaceListener, this);
 	}
 }
