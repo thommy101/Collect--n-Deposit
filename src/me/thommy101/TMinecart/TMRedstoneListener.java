@@ -87,10 +87,10 @@ private static TMinecart plugin;
 						new Location(world, intX, intY-1, intZ-1)};
 				for(Location location:locations)
 				{
-					if(location.getBlock().getTypeId()!=54) return;
+					if(location.getBlock().getTypeId()!=54) continue;
 					for(int blockid:blocks)
 					{
-						if(blockid==0) return;
+						if(blockid==0) continue;
  						if(fill)
  						{
  							int amount = checkChestInv(location, blockid);
