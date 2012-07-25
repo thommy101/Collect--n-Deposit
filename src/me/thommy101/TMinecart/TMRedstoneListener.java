@@ -15,9 +15,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.griefcraft.lwc.LWC;
+import com.griefcraft.model.Protection;
+
 public class TMRedstoneListener implements Listener
 {
-@SuppressWarnings("unused")
 private static TMinecart plugin;
 	
 	public TMRedstoneListener(TMinecart instance)
@@ -267,5 +269,19 @@ private static TMinecart plugin;
 			chest.getInventory().removeItem(itemstack);
 		}
 		return 0;
+	}
+	
+	//TODO
+	@SuppressWarnings("unused")
+	private boolean isChestPublic(Block chest)
+	{
+		if(plugin.LWCEnabled)
+		{
+			Protection protection = LWC.getInstance().findProtection(chest);
+			if(protection==null || protection.typeToString().equalsIgnoreCase("public")) return true;
+		}else{
+			return true;
+		}
+		return false;
 	}
 }
