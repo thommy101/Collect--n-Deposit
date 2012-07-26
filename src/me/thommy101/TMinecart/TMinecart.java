@@ -6,8 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.griefcraft.lwc.LWC;
-
 public class TMinecart extends JavaPlugin
 {
 	public String logprefix;
@@ -28,6 +26,7 @@ public class TMinecart extends JavaPlugin
 		logprefix = "["+ getName() + "] ";
 		pm.registerEvents(redstoneListener, this);
 		pm.registerEvents(signPlaceListener, this);
-		if(LWC.ENABLED)LWCEnabled=true;
+		//if(LWC.ENABLED)LWCEnabled=true;
+		if(pm.isPluginEnabled("LWC")) LWCEnabled=true;
 	}
 }
