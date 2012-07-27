@@ -95,6 +95,7 @@ private static TMinecart plugin;
 						if(blockid==0) continue;
  						if(fill)
  						{
+ 							if(!isChestPublic(location.getBlock()))continue;
  							int amount = checkChestInv(location, blockid);
 	 						//fill cart with amount in chest found
 	 						if(amount!=0)
@@ -271,8 +272,6 @@ private static TMinecart plugin;
 		return 0;
 	}
 	
-	//TODO
-	@SuppressWarnings("unused")
 	private boolean isChestPublic(Block chest)
 	{
 		if(plugin.LWCEnabled)
