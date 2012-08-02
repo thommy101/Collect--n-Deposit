@@ -1,6 +1,8 @@
 package me.thommy101.TMinecart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -39,87 +41,144 @@ private static TMinecart plugin;
 		{
 			sign = (Sign)loc.getBlock().getState();
 		}
-		if(sign != null)
+		if(sign == null) return;
+
+		String line1 = sign.getLine(1);
+		if(line1.equals("[collect]"))
 		{
-			int[] blockIds;
-			String line1 = sign.getLine(1);
-			if(line1.equals("[collect]"))
+			//things to do when collecting
+			List<Chest> chests = findChest(dRail, false);
+			List<Entity> entitys = findCart(dRail);
+			List<Integer> blockIds=readBlocks(sign);
+			for(Entity storageCart:entitys)
 			{
-				blockIds=readBlocks(sign);
-				findCart(dRail, true, blockIds);
+				for(Chest chest:chests)
+				{
+					for(ItemStack itemstack:chest.getInventory().getContents())
+					{
+						if(itemstack==null) continue;
+						//TODO something with list contains value -1 (collect all)
+						//
+						//
+						if(!blockIds.contains(itemstack.getTypeId())) continue;
+						//Itemstack is on blockIds' list
+						int leftover = modCart(storageCart, itemstack, true);
+						itemstack.setAmount(itemstack.getAmount()-leftover);
+						modChest(chest.getLocation(), itemstack, false);
+					}
+				}
 			}
-			else if (line1.equals("[deposit]"))
+		}
+		else if (line1.equals("[deposit]"))
+		{
+			//things to do when depositing
+			List<Integer> blockIds=readBlocks(sign);
+			List<Entity> entitys = findCart(dRail);
+			List<Chest> chests = findChest(dRail, true);
+			for(Entity storageCart:entitys)
 			{
-				blockIds=readBlocks(sign);
-				findCart(dRail, false, blockIds);
+				for(Chest chest:chests)
+				{
+					StorageMinecart cart=(StorageMinecart) storageCart;
+					for(ItemStack itemstack:cart.getInventory().getContents())
+					{
+						if(itemstack==null) continue;
+						//TODO something with list contains value -1 (collect all)
+						//
+						//
+						if(!blockIds.contains(itemstack.getTypeId())) continue;
+						//Itemstack is on blockIds' list
+						int leftover = modChest(chest.getLocation(), itemstack, true);
+						itemstack.setAmount(itemstack.getAmount()-leftover);
+						modCart(storageCart, itemstack, false);
+					}
+				}
 			}
 		}
 	}
 	
 	/**
-	 * Finds a cart close to the detector rail.
-	 * Checks the inventory of the cart/chest.
-	 * Executes the fill/emptying of the cart/chest.
+	 * Finds chest next to dRail and optional checks if they are private or not.
+	 * @param dRail			Detectorrail that needs to be searched next to.
+	 * @param privateCheck	Need chests to be checked if they are private?
+	 * @return				List of chests.
+	 */
+	private List<Chest> findChest(Block dRail, boolean privateCheck)
+	{
+		//Initialize List of chests
+		List<Chest> chestList = new ArrayList<Chest>();
+		//Make array of possible locations of chests
+		World world = dRail.getWorld();
+		int intX = dRail.getX();
+		int intY = dRail.getY();
+		int intZ = dRail.getZ();
+		Location locations[]={
+				new Location(world, intX+1, intY, intZ),
+				new Location(world, intX+1, intY-1, intZ),
+				new Location(world, intX-1, intY, intZ),
+				new Location(world, intX-1, intY-1, intZ),
+				new Location(world, intX, intY, intZ+1),
+				new Location(world, intX, intY-1, intZ+1),
+				new Location(world, intX, intY, intZ-1),
+				new Location(world, intX, intY-1, intZ-1)};
+		//Check every location for vallid chest, if valid, add it to list
+		for(Location location:locations)
+		{
+			if(location.getBlock().getTypeId()==54)
+			{
+				if(privateCheck)
+				{
+					if(isChestPublic(location.getBlock()))
+						chestList.add((Chest)location.getBlock().getState());
+				}
+				else
+					chestList.add((Chest)location.getBlock().getState());
+			}
+		}
+		//Return the list
+		return chestList;
+	}
+	
+	/**
+	 * Checks if chest is public (with LWC plugin)
+	 * @param chest		Chest needed to be checked
+	 * @return			True if chest is public/not registered, false if else
+	 */
+	private boolean isChestPublic(Block chest)
+	{
+		if(plugin.LWCEnabled)
+		{
+			Protection protection = LWC.getInstance().findProtection(chest);
+			if(protection==null || protection.typeToString().equalsIgnoreCase("public")) return true;
+		}else{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Finds a cart close to the detector rail
+	 * Executes isValidStorageCart to validate carts
 	 * 
 	 * @param dRail		Detector Rail block.
-	 * @param fill		Need to fill cart or not?
-	 * @param blocks	Array of blocks needed to check.
+	 * @return			Entity list of valid storage carts
 	 */
-	private void findCart(Block dRail, Boolean fill, int[] blocks)
+	private List<Entity> findCart(Block dRail)
 	{
-		//Find a minecart with chest
-		Entity entities[] = dRail.getChunk().getEntities();
-		for(Entity entity:entities)
+		//Initialize List of entitys
+		List<Entity> entityList = new ArrayList<Entity>();
+		//Get array of entitys in chunk of Detector Rail.
+		Entity[] entitys = dRail.getChunk().getEntities();
+		//Check every entity for a vallid storage cart close to the Detector Rail
+		// If valid, add it to list
+		for(Entity entity:entitys)
 		{
 			if(isValidStorageCart(entity, dRail.getLocation()))
 			{
-				//Find a chest next to detector rail
-				World world = dRail.getWorld();
-				int intX = dRail.getX();
-				int intY = dRail.getY();
-				int intZ = dRail.getZ();
-				Location locations[]={
-						new Location(world, intX+1, intY, intZ),
-						new Location(world, intX+1, intY-1, intZ),
-						new Location(world, intX-1, intY, intZ),
-						new Location(world, intX-1, intY-1, intZ),
-						new Location(world, intX, intY, intZ+1),
-						new Location(world, intX, intY-1, intZ+1),
-						new Location(world, intX, intY, intZ-1),
-						new Location(world, intX, intY-1, intZ-1)};
-				for(Location location:locations)
-				{
-					if(location.getBlock().getTypeId()!=54) continue;
-					for(int blockid:blocks)
-					{
-						if(blockid==0) continue;
- 						if(fill)
- 						{
- 							if(!isChestPublic(location.getBlock()))continue;
- 							int amount = checkChestInv(location, blockid);
-	 						//fill cart with amount in chest found
-	 						if(amount!=0)
-	 						{
-	 							int leftover = modCart(entity, blockid, true, amount);
-	 							amount -= leftover;
-	 							//empty chest with items that fit in the cart
-	 							modChest(location, blockid, false, amount);
-	 						}
- 						}else{
-							int amount = checkCartInv(entity, blockid);
-							//fill chest with amount in chest found
-							if(amount!=0)
-							{
-								int leftover = modChest(location, blockid, true, amount);
-								amount -= leftover;
-								//empty cart with items that fit in the chest
-								modCart(entity, blockid, false, amount);
-							}
- 						}
-					}
-				}
+				entityList.add(entity);
 			}
 		}
+		return entityList;
 	}
 	
 	/**
@@ -143,71 +202,25 @@ private static TMinecart plugin;
 	 * @return		An array of block ID's need to be checked in next part.
 	 */
 	//TODO Make an "*" option to get all blocks out of chest/cart
-	private int[] readBlocks(Sign sign)
+	private List<Integer> readBlocks(Sign sign)
 	{
-		int blocks[] = {0, 0, 0, 0, 0, 0, 0, 0};
+		List<Integer> ids = new ArrayList<Integer>();
 		String line2=sign.getLine(2);
 //		if(line2.equals("*") || line2.equalsIgnoreCase("all"))
 //		{
-//			blocks[0] = -1;
-//			return blocks;
+//			ids.add(-1);
+//			return ids;
 //		}
 		String splitLine[] = line2.split(",", 8);
-		for(int i=0; i<splitLine.length ; i++)
+		for(String linePart:splitLine)
 		{
 			try
 			{
-				blocks[i]=Integer.parseInt(splitLine[i].trim());
+				ids.add(Integer.parseInt(linePart.trim()));
 			}
 			catch(NumberFormatException ex){}
 		}
-		return blocks;
-	}
-	
-	/**
-	 * Checks if param "blockid" is in storage minecart "entity".
-	 * 
-	 * @param entity	The storage minecart which inventory needs to be checked.
-	 * @param blockid	The ID of the block that need to be found.
-	 * @return			The amount of blockid found.
-	 */
-	private int checkCartInv(Entity entity, int blockid)
-	{
-		StorageMinecart storageMinecart=(StorageMinecart) entity;
-		ItemStack[] items = storageMinecart.getInventory().getContents();
-		int amount = 0;
-		for(int i=0;i<items.length;i++)
-		{
-			ItemStack item = items[i];
-			if(item!=null && item.getAmount()>0 && item.getTypeId()==blockid)
-			{
-				amount += item.getAmount();
-			}
-		}
-		return amount;
-	}
-	
-	/**
-	 * Checks if param "blockid" is in chest at "location".
-	 * 
-	 * @param location	The location of the chest.
-	 * @param blockid	The ID of the block that need to be found.
-	 * @return			The amount of blockid found.
-	 */
-	private int checkChestInv(Location location, int blockid)
-	{
-		Chest chest=(Chest)location.getBlock().getState();
-		ItemStack[] items = chest.getInventory().getContents();
-		int amount = 0;
-		for(int i=0; i<items.length; i++)
-		{
-			ItemStack item = items[i];
-			if(item!=null && item.getAmount()>0 && item.getTypeId()==blockid)
-			{
-				amount += item.getAmount();
-			}
-		}
-		return amount;
+		return ids;
 	}
 	
 	/**
@@ -215,17 +228,16 @@ private static TMinecart plugin;
 	 * Fills/empties a cart with given "amount" of "blockid".
 	 * 
 	 * @param entity	The entity that is the storage minecart.
-	 * @param blockid	The block id that need to be put in/get out of the storage minecart.
+	 * @param itemstack	The itemstack that need to be put in/get out of the storage minecart.
 	 * @param fill		True if fill, False if empty.
-	 * @param amount	Amount of blockid that need to be processed.
 	 * @return			Amount that didn't fit in the cart.
 	 */
-	private int modCart(Entity entity, int blockid, boolean fill, int amount)
+	private int modCart(Entity entity, ItemStack itemstack, boolean fill)
 	{
 		StorageMinecart storageMinecart=(StorageMinecart) entity;
 		if(fill)
 		{
-			ItemStack itemstack = new ItemStack(blockid, amount);
+			//ItemStack itemstack = new ItemStack(blockid, amount);
 			HashMap<Integer, ItemStack> hmLeftover = storageMinecart.getInventory().addItem(itemstack);
 			int leftover = 0;
 			if(!(hmLeftover.isEmpty()) || hmLeftover==null)
@@ -235,7 +247,6 @@ private static TMinecart plugin;
 			return leftover;
 		}else{
 			//empty
-			ItemStack itemstack = new ItemStack(blockid, amount);
 			storageMinecart.getInventory().removeItem(itemstack);
 		}
 		return 0;
@@ -246,17 +257,15 @@ private static TMinecart plugin;
 	 * Fills/empties a chest with given "amount" of "blockid".
 	 * 
 	 * @param location	Location of the chest.
-	 * @param blockid	THe block id that need to be put in/get out of the chest.
-	 * @param fill		True if full, False if empty.
-	 * @param amount	Amount of blockid that need to be processed.
+	 * @param itemstack	The itemstack that need to be put in/get out of the chest.
+	 * @param fill		True if fill, False if empty.
 	 * @return			Amount that didn't fit in the cart.
 	 */
-	private int modChest(Location location, int blockid, boolean fill, int amount)
+	private int modChest(Location location, ItemStack itemstack, boolean fill)
 	{
 		Chest chest = (Chest)location.getBlock().getState();
 		if(fill)
 		{
-			ItemStack itemstack = new ItemStack(blockid, amount);
 			HashMap<Integer, ItemStack> hmLeftover = chest.getInventory().addItem(itemstack);
 			int leftover = 0;
 			if(!(hmLeftover.isEmpty()) || hmLeftover==null)
@@ -266,21 +275,8 @@ private static TMinecart plugin;
 			return leftover;
 		}else{
 			//empty
-			ItemStack itemstack = new ItemStack(blockid, amount);
 			chest.getInventory().removeItem(itemstack);
 		}
 		return 0;
-	}
-	
-	private boolean isChestPublic(Block chest)
-	{
-		if(plugin.LWCEnabled)
-		{
-			Protection protection = LWC.getInstance().findProtection(chest);
-			if(protection==null || protection.typeToString().equalsIgnoreCase("public")) return true;
-		}else{
-			return true;
-		}
-		return false;
 	}
 }
