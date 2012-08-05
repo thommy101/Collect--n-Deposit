@@ -57,14 +57,13 @@ private static TMinecart plugin;
 					for(ItemStack itemstack:chest.getInventory().getContents())
 					{
 						if(itemstack==null) continue;
-						//TODO something with list contains value -1 (collect all)
-						//
-						//
-						if(!blockIds.contains(itemstack.getTypeId())) continue;
-						//Itemstack is on blockIds' list
-						int leftover = modCart(storageCart, itemstack, true);
-						itemstack.setAmount(itemstack.getAmount()-leftover);
-						modChest(chest.getLocation(), itemstack, false);
+						if(!blockIds.contains(itemstack.getTypeId()) || blockIds.contains(-1))
+						{
+							//Itemstack is on blockIds' list
+							int leftover = modCart(storageCart, itemstack, true);
+							itemstack.setAmount(itemstack.getAmount()-leftover);
+							modChest(chest.getLocation(), itemstack, false);
+						}
 					}
 				}
 			}
@@ -83,14 +82,13 @@ private static TMinecart plugin;
 					for(ItemStack itemstack:cart.getInventory().getContents())
 					{
 						if(itemstack==null) continue;
-						//TODO something with list contains value -1 (collect all)
-						//
-						//
-						if(!blockIds.contains(itemstack.getTypeId())) continue;
-						//Itemstack is on blockIds' list
-						int leftover = modChest(chest.getLocation(), itemstack, true);
-						itemstack.setAmount(itemstack.getAmount()-leftover);
-						modCart(storageCart, itemstack, false);
+						if(blockIds.contains(itemstack.getTypeId()) || blockIds.contains(-1))
+						{
+							//Itemstack is on blockIds' list
+							int leftover = modChest(chest.getLocation(), itemstack, true);
+							itemstack.setAmount(itemstack.getAmount()-leftover);
+							modCart(storageCart, itemstack, false);
+						}
 					}
 				}
 			}
@@ -206,11 +204,11 @@ private static TMinecart plugin;
 	{
 		List<Integer> ids = new ArrayList<Integer>();
 		String line2=sign.getLine(2);
-//		if(line2.equals("*") || line2.equalsIgnoreCase("all"))
-//		{
-//			ids.add(-1);
-//			return ids;
-//		}
+		if(line2.equals("*") || line2.equalsIgnoreCase("all"))
+		{
+			ids.add(-1);
+			return ids;
+		}
 		String splitLine[] = line2.split(",", 8);
 		for(String linePart:splitLine)
 		{
