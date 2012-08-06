@@ -204,7 +204,7 @@ private static TMinecart plugin;
 	{
 		List<Integer> ids = new ArrayList<Integer>();
 		String line2=sign.getLine(2);
-		String line2and3=line2+sign.getLine(3);
+		String line2and3=line2+","+sign.getLine(3);
 		if(line2.equals("*") || line2.equalsIgnoreCase("all"))
 		{
 			ids.add(-1);
