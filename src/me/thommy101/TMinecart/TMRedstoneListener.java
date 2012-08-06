@@ -57,7 +57,7 @@ private static TMinecart plugin;
 					for(ItemStack itemstack:chest.getInventory().getContents())
 					{
 						if(itemstack==null) continue;
-						if(!blockIds.contains(itemstack.getTypeId()) || blockIds.contains(-1))
+						if(blockIds.contains(itemstack.getTypeId()) || blockIds.contains(-1))
 						{
 							//Itemstack is on blockIds' list
 							int leftover = modCart(storageCart, itemstack, true);
