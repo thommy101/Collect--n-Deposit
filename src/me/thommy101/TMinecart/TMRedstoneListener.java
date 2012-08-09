@@ -44,12 +44,12 @@ private static TMinecart plugin;
 		if(sign == null) return;
 
 		String line1 = sign.getLine(1);
-		if(line1.equals("[collect]"))
+		if(line1.trim().equalsIgnoreCase("[collect]"))
 		{
 			//things to do when collecting
-			List<Chest> chests = findChest(dRail, false);
+			List<Chest> chests = findChest(dRail, true);
 			List<Entity> entitys = findCart(dRail);
-			List<Integer> blockIds=readBlocks(sign);
+			ArrayList<List<Integer>> signData=readBlocks(sign);
 			for(Entity storageCart:entitys)
 			{
 				for(Chest chest:chests)
@@ -57,23 +57,28 @@ private static TMinecart plugin;
 					for(ItemStack itemstack:chest.getInventory().getContents())
 					{
 						if(itemstack==null) continue;
-						if(blockIds.contains(itemstack.getTypeId()) || blockIds.contains(-1))
+						for(int i = 0; i < signData.get(0).size(); i++)
 						{
-							//Itemstack is on blockIds' list
-							int leftover = modCart(storageCart, itemstack, true);
-							itemstack.setAmount(itemstack.getAmount()-leftover);
-							modChest(chest.getLocation(), itemstack, false);
+							if(signData.get(0).get(i) != itemstack.getTypeId() && signData.get(0).get(i) != -1) continue;
+							if(signData.get(1).get(i)==-1 ||
+									signData.get(1).get(i)==itemstack.getData().getData() ||
+									signData.get(0).get(0)==-1)
+							{
+								int leftover = modCart(storageCart, itemstack, true);
+								itemstack.setAmount(itemstack.getAmount()-leftover);
+								modChest(chest.getLocation(), itemstack, false);
+							}
 						}
 					}
 				}
 			}
 		}
-		else if (line1.equals("[deposit]"))
+		else if (line1.trim().equalsIgnoreCase("[deposit]"))
 		{
 			//things to do when depositing
-			List<Integer> blockIds=readBlocks(sign);
+			ArrayList<List<Integer>> signData=readBlocks(sign);
 			List<Entity> entitys = findCart(dRail);
-			List<Chest> chests = findChest(dRail, true);
+			List<Chest> chests = findChest(dRail, false);
 			for(Entity storageCart:entitys)
 			{
 				for(Chest chest:chests)
@@ -82,12 +87,17 @@ private static TMinecart plugin;
 					for(ItemStack itemstack:cart.getInventory().getContents())
 					{
 						if(itemstack==null) continue;
-						if(blockIds.contains(itemstack.getTypeId()) || blockIds.contains(-1))
+						for(int i = 0; i < signData.get(0).size(); i++)
 						{
-							//Itemstack is on blockIds' list
-							int leftover = modChest(chest.getLocation(), itemstack, true);
-							itemstack.setAmount(itemstack.getAmount()-leftover);
-							modCart(storageCart, itemstack, false);
+							if(signData.get(0).get(i) != itemstack.getTypeId() && signData.get(0).get(i) != -1) continue;
+							if(signData.get(1).get(i)==-1 ||
+									signData.get(1).get(i)==itemstack.getData().getData() ||
+									signData.get(0).get(0)==-1)
+							{
+								int leftover = modChest(chest.getLocation(), itemstack, true);
+								itemstack.setAmount(itemstack.getAmount()-leftover);
+								modCart(storageCart, itemstack, false);
+							}
 						}
 					}
 				}
@@ -197,29 +207,65 @@ private static TMinecart plugin;
 	 * Reads the sign to check the information.
 	 * 
 	 * @param sign	The sign needed to be checked.
-	 * @return		An array of block ID's need to be checked in next part.
+	 * @return		An ArrayList with 3 lists - Id, MetaData, Amount
 	 */
-	//TODO Make an "*" option to get all blocks out of chest/cart
-	private List<Integer> readBlocks(Sign sign)
+	private ArrayList<List<Integer>> readBlocks(Sign sign)
 	{
-		List<Integer> ids = new ArrayList<Integer>();
-		String line2=sign.getLine(2);
-		String line2and3=line2+","+sign.getLine(3);
-		if(line2.equals("*") || line2.equalsIgnoreCase("all"))
+		ArrayList<List<Integer>> signData = new ArrayList<List<Integer>>();
+		if(sign.getLine(1).equalsIgnoreCase("*") || sign.getLine(1).equalsIgnoreCase("all"))
 		{
-			ids.add(-1);
-			return ids;
+			List<Integer> list = new ArrayList<Integer>();
+			list.add(-1);
+			signData.add(list);
+			return signData;
 		}
-		String splitLine[] = line2and3.split(",");
-		for(String linePart:splitLine)
+		List<Integer> listId = new ArrayList<Integer>();
+		List<Integer> listMd = new ArrayList<Integer>();
+		List<Integer> listAm = new ArrayList<Integer>();
+		
+		String signrules= sign.getLine(2)+","+sign.getLine(3);
+		String[] stringParts = signrules.split(",");
+		for(String part:stringParts)
 		{
-			try
+			int id;//ID
+			int md;//Meta Data
+			int am;//Amount
+			if(part.contains(":") && part.contains("="))
 			{
-				ids.add(Integer.parseInt(linePart.trim()));
+				String[] part1 = part.split(":");
+				id = parseInt(part1[0]);
+				String[] part2 = part1[1].split("=");
+				md = parseInt(part2[0]);
+				am = parseInt(part2[1]);
 			}
-			catch(NumberFormatException ex){}
+			else if(part.contains(":"))
+			{
+				String[] part1 = part.split(":");
+				id = parseInt(part1[0]);
+				md = parseInt(part1[1]);
+				am = -1;
+			}
+			else if(part.contains("="))
+			{
+				String[] part1 = part.split("=");
+				id = parseInt(part1[0]);
+				md = -1;
+				am = parseInt(part1[1]);
+			}
+			else
+			{
+				id = parseInt(part);
+				md = -1;
+				am = -1;
+			}
+			listId.add(id);
+			listMd.add(md);
+			listAm.add(am);
 		}
-		return ids;
+		signData.add(listId);
+		signData.add(listMd);
+		signData.add(listAm);
+		return signData;
 	}
 	
 	/**
@@ -277,5 +323,21 @@ private static TMinecart plugin;
 			chest.getInventory().removeItem(itemstack);
 		}
 		return 0;
+	}
+	
+	/**
+	 * Converts string to int
+	 * @param s
+	 * @return Integer if succeded, -1 if can't convert.
+	 */
+	private int parseInt(String s)
+	{
+		int i = -1;
+		try
+		{
+			i = Integer.parseInt(s);
+		}
+		catch(NumberFormatException ex){}
+		return i;
 	}
 }
