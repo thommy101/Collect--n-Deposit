@@ -27,6 +27,8 @@ private static TMinecart plugin;
 			{
 				event.getBlock().breakNaturally();
 				player.sendMessage(ChatColor.RED+"You are not allowed to place an collector");	
+			}else{
+				player.sendMessage(ChatColor.GREEN+"You have placed an collector");
 			}
 					
 		}	
@@ -36,6 +38,8 @@ private static TMinecart plugin;
 			{
 				event.getBlock().breakNaturally();
 				player.sendMessage(ChatColor.RED+"You are not allowed to place an depositor");
+			}else{
+				player.sendMessage(ChatColor.GREEN+"You have placed an depositor");
 			}
 		}
 	}
