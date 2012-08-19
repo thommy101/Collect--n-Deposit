@@ -223,7 +223,15 @@ private static TMinecart plugin;
 		List<Integer> listMd = new ArrayList<Integer>();
 		List<Integer> listAm = new ArrayList<Integer>();
 		
-		String signrules= sign.getLine(2)+","+sign.getLine(3);
+		String signrules;
+		if(sign.getLine(2).substring(sign.getLine(2).length()-1).equals(","))
+		{
+			signrules= sign.getLine(2)+sign.getLine(3);
+		}else{
+			signrules= sign.getLine(2)+","+sign.getLine(3);
+		}
+
+		//sign.getLine(2).length();
 		String[] stringParts = signrules.split(",");
 		for(String part:stringParts)
 		{
