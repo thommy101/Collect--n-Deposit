@@ -1,6 +1,6 @@
 name: Collect n Deposit
 main: me.thommy101.TMinecart.TMinecart
-version: 0.7.1
+version: 0.8
 author: thommy101
 permissions:
     cnd.*:
