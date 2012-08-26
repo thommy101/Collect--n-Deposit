@@ -56,17 +56,34 @@ private static TMinecart plugin;
 				{
 					for(ItemStack itemstack:chest.getInventory().getContents())
 					{
+						//if the itemstack is empty/non existing, stop.
 						if(itemstack==null) continue;
 						for(int i = 0; i < signData.get(0).size(); i++)
 						{
-							if(signData.get(0).get(i) != itemstack.getTypeId() && signData.get(0).get(i) != -1) continue;
+							//copy the itemstack so it wont directly edit the inventory
+							ItemStack itemstack2 = itemstack.clone();
+							//check the signdata for the item ID
+							if(signData.get(0).get(i) != itemstack2.getTypeId() && signData.get(0).get(i) != -1) continue;
+							//if item Amount equals to 0. stop
+							if(signData.get(2).get(i)==0) continue;
+							//check the signdata for the item Meta Data
 							if(signData.get(1).get(i)==-1 ||
-									signData.get(1).get(i)==itemstack.getData().getData() ||
+									signData.get(1).get(i)==itemstack2.getData().getData() ||
 									signData.get(0).get(0)==-1)
 							{
-								int leftover = modCart(storageCart, itemstack, true);
-								itemstack.setAmount(itemstack.getAmount()-leftover);
-								modChest(chest.getLocation(), itemstack, false);
+								//check the signdata for the item Amount.
+								if(signData.get(2).get(i)!=-1&&itemstack2.getAmount()>signData.get(2).get(i))
+								{
+									itemstack2.setAmount(signData.get(2).get(i));
+								}
+								int leftover = modCart(storageCart, itemstack2, true);
+								itemstack2.setAmount(itemstack2.getAmount()-leftover);
+								modChest(chest.getLocation(), itemstack2, false);
+								//modify signdata item Amount if nesseserry
+								if(signData.get(2).get(i)>=0 && signData.get(0).get(i)!=-1)
+								{
+									signData.get(2).set(i, signData.get(2).get(i)-itemstack2.getAmount());
+								}
 							}
 						}
 					}
@@ -86,17 +103,34 @@ private static TMinecart plugin;
 					StorageMinecart cart=(StorageMinecart) storageCart;
 					for(ItemStack itemstack:cart.getInventory().getContents())
 					{
+						//if the itemstack is empty/non existing, stop.
 						if(itemstack==null) continue;
 						for(int i = 0; i < signData.get(0).size(); i++)
 						{
-							if(signData.get(0).get(i) != itemstack.getTypeId() && signData.get(0).get(i) != -1) continue;
+							//copy the itemstack so it wont directly edit the inventory
+							ItemStack itemstack2 = itemstack.clone();
+							//check the signdata for the item ID
+							if(signData.get(0).get(i) != itemstack2.getTypeId() && signData.get(0).get(i) != -1) continue;
+							//if item Amount equals to 0. stop
+							if(signData.get(2).get(i)==0) continue;
+							//check the signdata for the item Meta Data
 							if(signData.get(1).get(i)==-1 ||
-									signData.get(1).get(i)==itemstack.getData().getData() ||
+									signData.get(1).get(i)==itemstack2.getData().getData() ||
 									signData.get(0).get(0)==-1)
 							{
-								int leftover = modChest(chest.getLocation(), itemstack, true);
-								itemstack.setAmount(itemstack.getAmount()-leftover);
-								modCart(storageCart, itemstack, false);
+								//check the signdata for the item Amount.
+								if(signData.get(2).get(i)!=-1&&itemstack2.getAmount()>signData.get(2).get(i))
+								{
+									itemstack2.setAmount(signData.get(2).get(i));
+								}
+								int leftover = modChest(chest.getLocation(), itemstack2, true);
+								itemstack2.setAmount(itemstack2.getAmount()-leftover);
+								modCart(storageCart, itemstack2, false);
+								//modify signdata item Amount if nesseserry
+								if(signData.get(2).get(i)>=0 && signData.get(0).get(i)!=-1)
+								{
+									signData.get(2).set(i, signData.get(2).get(i)-itemstack2.getAmount());
+								}
 							}
 						}
 					}
