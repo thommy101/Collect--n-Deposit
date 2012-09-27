@@ -49,6 +49,7 @@ private static TMinecart plugin;
 		if(line1.trim().equalsIgnoreCase("[collect]"))
 		{
 			//things to do when collecting
+			int IFurnace=0;
 			ArrayList<Block> Containers = findContainer(dRail, true);
 			List<Entity> entitys = findCart(dRail);
 			ArrayList<List<Integer>> signData=readBlocks(sign);
@@ -64,17 +65,27 @@ private static TMinecart plugin;
 					if(container.getTypeId() == 54)
 						inventory = ((Chest) container.getState()).getInventory();
 					if(container.getTypeId() == 61)
+					{
 						inventory = ((Furnace) container.getState()).getInventory();
+						IFurnace=1;
+					}
 					if(inventory == null) continue;
 					
 					for(ItemStack itemstack:inventory.getContents())
 					{
-						//if the itemstack is empty/non existing, stop.
 						if(itemstack==null) continue;
+						//copy the itemstack so it wont directly edit the inventory
+						ItemStack itemstack2 = itemstack.clone();
+						if(IFurnace == 0)
+						{
+							itemstack2 = inventory.getItem(3);
+						}else if(IFurnace ==1){
+							return;
+						}
+						//if the itemstack is empty/non existing, stop.
+						
 						for(int i = 0; i < signData.get(0).size(); i++)
 						{
-							//copy the itemstack so it wont directly edit the inventory
-							ItemStack itemstack2 = itemstack.clone();
 							//check the signdata for the item ID
 							if(signData.get(0).get(i) != itemstack2.getTypeId() && signData.get(0).get(i) != -1) continue;
 							//if item Amount equals to 0. stop
