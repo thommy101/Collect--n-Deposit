@@ -76,13 +76,16 @@ private static TMinecart plugin;
 						if(itemstack==null) continue;
 						//copy the itemstack so it wont directly edit the inventory
 						ItemStack itemstack2 = itemstack.clone();
-						if(IFurnace == 0)
+						//Only run once for the furnace
+						if(IFurnace==1)
 						{
-							itemstack2 = inventory.getItem(3);
-						}else if(IFurnace ==1){
+							itemstack2=inventory.getItem(3);
+							IFurnace=2;
+						}else if(IFurnace==2){
 							return;
 						}
 						//if the itemstack is empty/non existing, stop.
+						if(itemstack2==null)continue;
 						
 						for(int i = 0; i < signData.get(0).size(); i++)
 						{
