@@ -79,7 +79,7 @@ private static TMinecart plugin;
 						//Only run once for the furnace
 						if(IFurnace==1)
 						{
-							itemstack2=inventory.getItem(3);
+							itemstack2=inventory.getItem(2);
 							IFurnace=2;
 						}else if(IFurnace==2){
 							return;
