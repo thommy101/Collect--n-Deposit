@@ -9,8 +9,7 @@ import org.bukkit.event.block.SignChangeEvent;
 
 public class TMSignChangeListener implements Listener
 {
-@SuppressWarnings("unused")
-private static TMinecart plugin;
+	private static TMinecart plugin;
 	
 	public TMSignChangeListener(TMinecart instance)
 	{
@@ -23,10 +22,11 @@ private static TMinecart plugin;
 		Player player = event.getPlayer();
 		if(event.getLine(1).equalsIgnoreCase("[Collect]"))
 		{
-			if(!player.hasPermission("cnd.collect"))
+			if(plugin.perms!=null&&!plugin.perms.playerHas(player, "cnd.collect") ||
+					plugin.perms==null&&!player.hasPermission("cnd.collect"))
 			{
 				event.getBlock().breakNaturally();
-				player.sendMessage(ChatColor.RED+"You are not allowed to place an collector");	
+				player.sendMessage(ChatColor.RED+"You are not allowed to place an collector");
 			}else{
 				player.sendMessage(ChatColor.GREEN+"You have placed an collector");
 			}
@@ -34,7 +34,8 @@ private static TMinecart plugin;
 		}	
 		if(event.getLine(1).equalsIgnoreCase("[Deposit]"))
 		{
-			if(!player.hasPermission("cnd.deposit"))
+			if(plugin.perms!=null&&!plugin.perms.playerHas(player, "cnd.deposit") ||
+					plugin.perms==null&&!player.hasPermission("cnd.deposit"))
 			{
 				event.getBlock().breakNaturally();
 				player.sendMessage(ChatColor.RED+"You are not allowed to place an depositor");
